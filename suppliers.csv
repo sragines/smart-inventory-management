@@ -1,0 +1,11 @@
+supplier_id,supplier_name,country,avg_delivery_time_days,reliability_score,minimum_order_quantity
+SUP-001,Apex Auto Tech,Germany,5,0.98,100
+SUP-002,Bavaria Precision Parts,Germany,7,0.95,50
+SUP-003,Nordic Gearworks,Sweden,10,0.92,20
+SUP-004,Tokyo Sensor Corp,Japan,14,0.88,500
+SUP-005,Detroit Stamping Co,USA,12,0.91,200
+SUP-006,Eindhoven Microchips,Netherlands,21,0.76,1000
+SUP-007,Shanghai Electric Motors,China,28,0.82,50
+SUP-008,Turin Polymer Systems,Italy,9,0.89,150
+SUP-009,Stuttgart Braking Solutions,Germany,6,0.96,40
+SUP-010,Gutenberg Fasteners,Germany,4,0.99,5000

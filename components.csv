@@ -1,0 +1,51 @@
+component_id,component_name,category,stock_quantity,reorder_point,safety_stock,unit_cost,supplier_id,lead_time_days
+CMP-0001,Electric Motor 150kW,Powertrain,3,59,29,1484.64,SUP-007,28
+CMP-0002,Turbocharger Assembly,Powertrain,79,75,33,491.83,SUP-005,12
+CMP-0003,Cylinder Head,Powertrain,7,65,22,767.25,SUP-008,9
+CMP-0004,Transmission Control Unit,Powertrain,34,69,38,337.44,SUP-006,21
+CMP-0005,Drive Shaft,Powertrain,62,55,35,251.21,SUP-006,21
+CMP-0006,Engine Valve Set,Powertrain,63,75,39,260.95,SUP-006,21
+CMP-0007,Fuel Injector Array,Powertrain,66,64,30,322.33,SUP-010,4
+CMP-0008,Oil Pump,Powertrain,7,78,34,842.82,SUP-003,10
+CMP-0009,Exhaust Manifold,Powertrain,43,63,35,1191.69,SUP-005,12
+CMP-0010,Timing Belt Kit,Powertrain,13,65,28,1720.77,SUP-002,7
+CMP-0011,Brake Caliper Assembly,Chassis & Braking,27,158,49,67.35,SUP-010,4
+CMP-0012,ABS Sensor Module,Chassis & Braking,8,164,65,294.61,SUP-003,10
+CMP-0013,Ventilated Brake Disc,Chassis & Braking,125,138,35,127.28,SUP-004,14
+CMP-0014,Suspension Strut,Chassis & Braking,33,140,47,91.76,SUP-004,14
+CMP-0015,Steering Rack,Chassis & Braking,43,171,69,199.72,SUP-008,9
+CMP-0016,Sway Bar Link,Chassis & Braking,34,164,74,310.27,SUP-010,4
+CMP-0017,Wheel Bearing Kit,Chassis & Braking,82,88,38,44.38,SUP-001,5
+CMP-0018,Brake Pad Set,Chassis & Braking,52,148,64,237.92,SUP-003,10
+CMP-0019,Air Suspension Compressor,Chassis & Braking,91,147,70,299.36,SUP-005,12
+CMP-0020,Control Arm,Chassis & Braking,56,163,52,66.71,SUP-002,7
+CMP-0021,Main ECU Microcontroller,Electronics & Chips,12,305,135,417.04,SUP-003,10
+CMP-0022,Infotainment Display 12in,Electronics & Chips,140,253,96,298.27,SUP-001,5
+CMP-0023,LiDAR Sensor Module,Electronics & Chips,36,245,63,491.39,SUP-001,5
+CMP-0024,Radar Distance Unit,Electronics & Chips,133,260,139,485.08,SUP-009,6
+CMP-0025,Battery Management System Board,Electronics & Chips,141,276,101,97.91,SUP-003,10
+CMP-0026,Wiring Harness Main,Electronics & Chips,38,186,64,222.1,SUP-005,12
+CMP-0027,LED Headlight Controller,Electronics & Chips,95,258,120,617.43,SUP-004,14
+CMP-0028,Keyless Entry Receiver,Electronics & Chips,143,247,111,435.88,SUP-002,7
+CMP-0029,Ultrasonic Parking Sensor,Electronics & Chips,101,322,124,588.76,SUP-004,14
+CMP-0030,DC-DC Converter,Electronics & Chips,130,226,146,261.26,SUP-009,6
+CMP-0031,Panoramic Sunroof Glass,Body & Interior,74,60,28,419.93,SUP-009,6
+CMP-0032,Driver Airbag Module,Body & Interior,55,115,49,295.0,SUP-008,9
+CMP-0033,Leather Seat Assembly,Body & Interior,92,95,34,208.55,SUP-010,4
+CMP-0034,Door Latch Mechanism,Body & Interior,62,127,49,237.69,SUP-009,6
+CMP-0035,Side Mirror Assembly,Body & Interior,7,57,26,168.63,SUP-004,14
+CMP-0036,Windshield Glass,Body & Interior,63,89,43,125.16,SUP-001,5
+CMP-0037,Instrument Cluster Display,Body & Interior,5,99,47,489.71,SUP-001,5
+CMP-0038,Dashboard Trim Kit,Body & Interior,94,113,40,359.51,SUP-003,10
+CMP-0039,Bumper Fascia Front,Body & Interior,60,63,23,166.5,SUP-006,21
+CMP-0040,Tailgate Actuator,Body & Interior,74,77,43,380.42,SUP-001,5
+CMP-0041,M8 Titanium Bolts (100pk),Hardware & Consumables,2500,882,439,26.43,SUP-006,21
+CMP-0042,High-Temp Gasket Sealant,Hardware & Consumables,863,905,458,17.83,SUP-009,6
+CMP-0043,Coolant Hose Kit,Hardware & Consumables,963,793,346,5.66,SUP-004,14
+CMP-0044,Synthetic Engine Oil 5L,Hardware & Consumables,437,665,327,11.97,SUP-007,28
+CMP-0045,Cabin Air Filter,Hardware & Consumables,362,1064,350,10.5,SUP-008,9
+CMP-0046,Wheel Lug Nuts (20pk),Hardware & Consumables,101,927,259,44.29,SUP-010,4
+CMP-0047,Structural Adhesive,Hardware & Consumables,1160,1091,339,8.72,SUP-001,5
+CMP-0048,Thermal Interface Pad,Hardware & Consumables,915,744,298,18.56,SUP-007,28
+CMP-0049,Fuse Box Relay Kit,Hardware & Consumables,727,672,253,39.25,SUP-003,10
+CMP-0050,Rubber Weatherstripping,Hardware & Consumables,353,942,303,11.47,SUP-001,5
