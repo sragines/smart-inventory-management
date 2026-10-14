@@ -2,6 +2,44 @@ import sqlite3
 import pandas as pd
 import streamlit as st
 
+# 1. Initialize databases & SQLite triggers on launch
+with sqlite3.connect("inventory.db") as conn:
+    pd.read_csv("components.csv").to_sql("components", conn, if_exists="replace", index=False)
+    pd.read_csv("inventory_movements.csv").to_sql("inventory_movements", conn, if_exists="replace", index=False)
+    
+    cursor = conn.cursor()
+    # Deduct stock on USAGE / OUT
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS update_stock_after_usage
+        AFTER INSERT ON inventory_movements
+        WHEN NEW.movement_type IN ('USAGE', 'OUT')
+        BEGIN
+            UPDATE components
+            SET stock_quantity = stock_quantity - NEW.quantity
+            WHERE component_id = NEW.component_id;
+        END;
+    """)
+    # Increase stock on RESTOCK / IN
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS update_stock_after_restock
+        AFTER INSERT ON inventory_movements
+        WHEN NEW.movement_type IN ('RESTOCK', 'IN')
+        BEGIN
+            UPDATE components
+            SET stock_quantity = stock_quantity + NEW.quantity
+            WHERE component_id = NEW.component_id;
+        END;
+    """)
+    conn.commit()
+
+with sqlite3.connect("suppliers.db") as conn:
+    pd.read_csv("suppliers.csv").to_sql("suppliers", conn, if_exists="replace", index=False)
+
+with sqlite3.connect("procurement.db") as conn:
+    pd.read_csv("purchase_orders.csv").to_sql("purchase_orders", conn, if_exists="replace", index=False)
+
+
+# 2. Streamlit Application
 st.set_page_config(page_title="Enterprise Inventory Operations", layout="wide")
 
 DATABASES = {
@@ -29,7 +67,7 @@ def execute_query(db_file, query, params=()):
         cursor.execute(query, params)
         conn.commit()
 
-# Sidebar
+# Navigation
 st.sidebar.title("Operational Control")
 selected_db_label = st.sidebar.selectbox("Select Target Database", list(DATABASES.keys()))
 db_config = DATABASES[selected_db_label]
@@ -38,7 +76,7 @@ selected_table = st.sidebar.selectbox("Select Target Table", db_config["tables"]
 st.sidebar.markdown("---")
 st.sidebar.caption(f"Active Connection: `{db_config['db']}`")
 
-# Main Interface
+# Dashboard UI
 st.title("Automotive Parts Inventory & Procurement Console")
 
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -48,7 +86,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "Vendor Performance Metrics"
 ])
 
-# Tab 1: CRUD Operations
+# Tab 1: CRUD
 with tab1:
     st.subheader(f"Table View: {selected_table}")
     
@@ -86,7 +124,7 @@ with tab1:
             execute_query(db_config["db"], sql, (selected_id,))
             st.warning(f"Record {selected_id} deleted.")
 
-# Tab 2: Reorder Threshold Analysis
+# Tab 2: Low Stock Analysis
 with tab2:
     st.subheader("Critical Stock Levels")
     query_low_stock = """
@@ -97,7 +135,7 @@ with tab2:
     """
     st.dataframe(fetch_data("inventory.db", query_low_stock))
 
-# Tab 3: Pending & Overdue Orders
+# Tab 3: Order Tracking
 with tab3:
     st.subheader("Open Purchase Orders")
     query_orders = """
