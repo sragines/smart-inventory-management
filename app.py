@@ -1,43 +1,51 @@
+import os
 import sqlite3
 import pandas as pd
 import streamlit as st
 
-# 1. Initialize databases & SQLite triggers on launch
-with sqlite3.connect("inventory.db") as conn:
-    pd.read_csv("components.csv").to_sql("components", conn, if_exists="replace", index=False)
-    pd.read_csv("inventory_movements.csv").to_sql("inventory_movements", conn, if_exists="replace", index=False)
-    
-    cursor = conn.cursor()
-    # Deduct stock on USAGE / OUT
-    cursor.execute("""
-        CREATE TRIGGER IF NOT EXISTS update_stock_after_usage
-        AFTER INSERT ON inventory_movements
-        WHEN NEW.movement_type IN ('USAGE', 'OUT')
-        BEGIN
-            UPDATE components
-            SET stock_quantity = stock_quantity - NEW.quantity
-            WHERE component_id = NEW.component_id;
-        END;
-    """)
-    # Increase stock on RESTOCK / IN
-    cursor.execute("""
-        CREATE TRIGGER IF NOT EXISTS update_stock_after_restock
-        AFTER INSERT ON inventory_movements
-        WHEN NEW.movement_type IN ('RESTOCK', 'IN')
-        BEGIN
-            UPDATE components
-            SET stock_quantity = stock_quantity + NEW.quantity
-            WHERE component_id = NEW.component_id;
-        END;
-    """)
-    conn.commit()
+# 1. Initialize databases & SQLite triggers on launch (only if missing)
+def init_databases():
+    # Inventory DB
+    db_exists = os.path.exists("inventory.db")
+    with sqlite3.connect("inventory.db") as conn:
+        if not db_exists:
+            pd.read_csv("components.csv").to_sql("components", conn, if_exists="replace", index=False)
+            pd.read_csv("inventory_movements.csv").to_sql("inventory_movements", conn, if_exists="replace", index=False)
+        
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TRIGGER IF NOT EXISTS update_stock_after_usage
+            AFTER INSERT ON inventory_movements
+            WHEN NEW.movement_type IN ('USAGE', 'OUT')
+            BEGIN
+                UPDATE components
+                SET stock_quantity = stock_quantity - NEW.quantity
+                WHERE component_id = NEW.component_id;
+            END;
+        """)
+        cursor.execute("""
+            CREATE TRIGGER IF NOT EXISTS update_stock_after_restock
+            AFTER INSERT ON inventory_movements
+            WHEN NEW.movement_type IN ('RESTOCK', 'IN')
+            BEGIN
+                UPDATE components
+                SET stock_quantity = stock_quantity + NEW.quantity
+                WHERE component_id = NEW.component_id;
+            END;
+        """)
+        conn.commit()
 
-with sqlite3.connect("suppliers.db") as conn:
-    pd.read_csv("suppliers.csv").to_sql("suppliers", conn, if_exists="replace", index=False)
+    # Suppliers DB
+    if not os.path.exists("suppliers.db"):
+        with sqlite3.connect("suppliers.db") as conn:
+            pd.read_csv("suppliers.csv").to_sql("suppliers", conn, if_exists="replace", index=False)
 
-with sqlite3.connect("procurement.db") as conn:
-    pd.read_csv("purchase_orders.csv").to_sql("purchase_orders", conn, if_exists="replace", index=False)
+    # Procurement DB
+    if not os.path.exists("procurement.db"):
+        with sqlite3.connect("procurement.db") as conn:
+            pd.read_csv("purchase_orders.csv").to_sql("purchase_orders", conn, if_exists="replace", index=False)
 
+init_databases()
 
 # 2. Streamlit Application
 st.set_page_config(page_title="Enterprise Inventory Operations", layout="wide")
@@ -66,6 +74,12 @@ def execute_query(db_file, query, params=()):
         cursor = conn.cursor()
         cursor.execute(query, params)
         conn.commit()
+
+def safe_rerun():
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
 
 # Navigation
 st.sidebar.title("Operational Control")
@@ -101,32 +115,43 @@ with tab1:
         with st.form(key="insert_record_form"):
             form_data = {}
             
-            # Haetaan viiteavaimet muista tauluista valikoita varten
-            comp_ids = fetch_data("inventory.db", "SELECT component_id FROM components")["component_id"].unique() if selected_table != "components" else []
-            supp_ids = fetch_data("suppliers.db", "SELECT supplier_id FROM suppliers")["supplier_id"].unique() if selected_table != "suppliers" else []
+            # Haetaan viitetiedot muista tauluista
+            comp_df = fetch_data("inventory.db", "SELECT component_id, component_name, category FROM components") if selected_table != "components" else pd.DataFrame()
+            supp_df = fetch_data("suppliers.db", "SELECT supplier_id, supplier_name FROM suppliers") if selected_table != "suppliers" else pd.DataFrame()
 
             for col in df.columns:
                 col_lower = col.lower()
                 
-                # Dynamic Dropdowns for FKs & Fixed Enums
-                if col_lower == "component_id" and len(comp_ids) > 0:
-                    form_data[col] = st.selectbox(col, comp_ids)
-                elif col_lower == "supplier_id" and len(supp_ids) > 0:
-                    form_data[col] = st.selectbox(col, supp_ids)
+                # Viiteavaimet (FK) dropdown-valikkoina muissa tauluissa
+                if col_lower == "component_id" and not comp_df.empty:
+                    selected_comp = st.selectbox("Select Component", comp_df["component_id"].unique())
+                    form_data[col] = selected_comp
+                    
+                    comp_info = comp_df[comp_df["component_id"] == selected_comp].iloc[0]
+                    st.caption(f"ℹ️ **Selected Part:** {comp_info['component_name']} ({comp_info['category']})")
+
+                elif col_lower == "supplier_id" and not supp_df.empty:
+                    selected_supp = st.selectbox("Select Supplier", supp_df["supplier_id"].unique())
+                    form_data[col] = selected_supp
+                    
+                    supp_info = supp_df[supp_df["supplier_id"] == selected_supp].iloc[0]
+                    st.caption(f"ℹ️ **Selected Vendor:** {supp_info['supplier_name']}")
+
                 elif col_lower == "movement_type":
                     form_data[col] = st.selectbox(col, ["USAGE", "RESTOCK", "IN", "OUT"])
+
                 elif col_lower == "order_status":
                     form_data[col] = st.selectbox(col, ["OPEN", "IN_TRANSIT", "OVERDUE", "DELIVERED", "CANCELLED"])
                 
-                # Dates -> Date Input
+                # Päivämäärät -> Kalenterivalitsin
                 elif "date" in col_lower:
                     form_data[col] = st.date_input(col).strftime("%Y-%m-%d")
                 
-                # Quantities & Numbers -> Number Input
+                # Numerot ja määrät -> Numerosyöte
                 elif any(num_word in col_lower for num_word in ["quantity", "stock", "point", "cost", "score", "lead_time"]):
                     form_data[col] = st.number_input(col, min_value=0, step=1)
                 
-                # Standard Text Inputs for everything else (IDs, Names, Categories)
+                # Pääavaimet ja tekstit (esim. uuden osan luominen 'components'-tauluun)
                 else:
                     form_data[col] = st.text_input(col)
             
@@ -138,7 +163,7 @@ with tab1:
                 try:
                     execute_query(db_config["db"], sql, tuple(form_data.values()))
                     st.success("Record committed successfully.")
-                    st.rerun()
+                    safe_rerun()
                 except Exception as err:
                     st.error(f"Execution Error: {err}")
 
@@ -151,7 +176,7 @@ with tab1:
             sql = f"DELETE FROM {selected_table} WHERE {pk_column} = ?"
             execute_query(db_config["db"], sql, (selected_id,))
             st.warning(f"Record {selected_id} deleted.")
-            st.rerun()
+            safe_rerun()
 
 # Tab 2: Low Stock Analysis
 with tab2:
