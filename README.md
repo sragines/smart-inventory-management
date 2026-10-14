@@ -26,7 +26,7 @@ A Streamlit application for automotive inventory and procurement management. Bui
 streamlit run app.py
 
 
-Future Development & Production Readiness
+## Future Development & Production Readiness
 If scaled for a real-world enterprise solution, key production enhancements would include:
 
 Centralized Relational Database: Migrating local SQLite files to a cloud-hosted database (e.g., PostgreSQL or MySQL) for multi-user concurrency and data security.
