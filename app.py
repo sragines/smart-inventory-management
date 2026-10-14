@@ -100,8 +100,35 @@ with tab1:
         st.write("### Record Entry")
         with st.form(key="insert_record_form"):
             form_data = {}
+            
+            # Haetaan viiteavaimet muista tauluista valikoita varten
+            comp_ids = fetch_data("inventory.db", "SELECT component_id FROM components")["component_id"].unique() if selected_table != "components" else []
+            supp_ids = fetch_data("suppliers.db", "SELECT supplier_id FROM suppliers")["supplier_id"].unique() if selected_table != "suppliers" else []
+
             for col in df.columns:
-                form_data[col] = st.text_input(label=col)
+                col_lower = col.lower()
+                
+                # Dynamic Dropdowns for FKs & Fixed Enums
+                if col_lower == "component_id" and len(comp_ids) > 0:
+                    form_data[col] = st.selectbox(col, comp_ids)
+                elif col_lower == "supplier_id" and len(supp_ids) > 0:
+                    form_data[col] = st.selectbox(col, supp_ids)
+                elif col_lower == "movement_type":
+                    form_data[col] = st.selectbox(col, ["USAGE", "RESTOCK", "IN", "OUT"])
+                elif col_lower == "order_status":
+                    form_data[col] = st.selectbox(col, ["OPEN", "IN_TRANSIT", "OVERDUE", "DELIVERED", "CANCELLED"])
+                
+                # Dates -> Date Input
+                elif "date" in col_lower:
+                    form_data[col] = st.date_input(col).strftime("%Y-%m-%d")
+                
+                # Quantities & Numbers -> Number Input
+                elif any(num_word in col_lower for num_word in ["quantity", "stock", "point", "cost", "score", "lead_time"]):
+                    form_data[col] = st.number_input(col, min_value=0, step=1)
+                
+                # Standard Text Inputs for everything else (IDs, Names, Categories)
+                else:
+                    form_data[col] = st.text_input(col)
             
             if st.form_submit_button("Commit Record"):
                 columns = ", ".join(form_data.keys())
@@ -111,6 +138,7 @@ with tab1:
                 try:
                     execute_query(db_config["db"], sql, tuple(form_data.values()))
                     st.success("Record committed successfully.")
+                    st.rerun()
                 except Exception as err:
                     st.error(f"Execution Error: {err}")
 
@@ -123,6 +151,7 @@ with tab1:
             sql = f"DELETE FROM {selected_table} WHERE {pk_column} = ?"
             execute_query(db_config["db"], sql, (selected_id,))
             st.warning(f"Record {selected_id} deleted.")
+            st.rerun()
 
 # Tab 2: Low Stock Analysis
 with tab2:
