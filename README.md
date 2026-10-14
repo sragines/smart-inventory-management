@@ -1,3 +1,4 @@
+Markdown
 # Smart Inventory & Procurement System
 
 A Streamlit application for automotive inventory and procurement management. Built for the Data-Intensive Systems course.
@@ -19,16 +20,11 @@ A Streamlit application for automotive inventory and procurement management. Bui
 1. Install dependencies:
    ```bash
    pip install streamlit pandas
+Launch the application:
 
-2. Launch the application:
-
-  ```bash
+Bash
 streamlit run app.py
-
-
-## Future Development & Production Readiness
-If scaled for a real-world enterprise solution, key production enhancements would include:
-
+Future Development & Production Readiness
 Centralized Relational Database: Migrating local SQLite files to a cloud-hosted database (e.g., PostgreSQL or MySQL) for multi-user concurrency and data security.
 
 Authentication & RBAC: Implementing Role-Based Access Control to restrict write/delete permissions based on user roles (e.g., Warehouse Operator vs. Procurement Manager).
